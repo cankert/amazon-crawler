@@ -1,9 +1,12 @@
 extends layout
 
 block content
-  h1= productName
-  p Preis: #{preis}
-  p Sale Preis: #{salepreis}
-  p Image: 
-    <img src="#{image}" width="200px"></img>
-  p Availability: #{availability}
+    h1= productName
+    if salepreis == ""
+        p Preis: #{preis}
+        p Kein Sale
+    else
+        p Sale Preis: #{salepreis} statt #{strokepreis}
+    p Availability: #{availability}
+    p Image:
+    span <img src="#{image}" width="200px"></img>

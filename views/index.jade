@@ -1,5 +1,17 @@
 extends layout
 
 block content
-  h1= title
-  p Welcome to #{title}
+
+  div.container
+    h1 Amazon Crawler
+    div.form-group.col-md-12
+        input.form-control(type="text", placeholder="Website URL", id="urltosubmit")
+        input.form-control(type="submit", value="Submit", id="submiturl")
+    table#producttable.table
+        thead
+            th ASIN
+            th Produkt
+            th Preis
+            th Verfügbarkeit
+            th Bild
+        tbody
