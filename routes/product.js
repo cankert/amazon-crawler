@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 var request = require('request');
 var cheerio = require('cheerio');
-
+const monk = require('monk');
 
 /* GET users listing. */
 /*router.get('/:id', function(req, res, next) {
@@ -14,7 +14,14 @@ var cheerio = require('cheerio');
         res.render('product', { productName: productName, preis: preis, salepreis: salepreis, image:image, availability: availability, strokepreis:strokepreis });
     }
 
-});*/
+});
+
+collection.find({'websiteid': monk.id(documentId)}, {sort: {date:-1}}).then((website) => {
+    //console.log(website);
+    res.render('website', { title: name , statusdata: website});
+
+
+*/
 
 router.get('/', function(req, res, next) {
 
@@ -44,6 +51,19 @@ router.get('/productlist', function(req, res, next) {
     });
 });
 
+router.get('/detail/:id', function(req, res, next) {
+    var db = req.db;
+    var collection = db.get('productdata');
+    var documentId = req.params.id;
+    console.log(documentId);
+
+    collection.find({'productid': documentId},{},function(e,docs){
+
+        res.render('productdetail', { title: 'Productdetail' , productdata: docs, foo:'FFF'});
+    });
+
+});
+
 
 router.post('/', function(req, res, next) {
     var db = req.db;
@@ -54,6 +74,17 @@ router.post('/', function(req, res, next) {
         );
     });
 });
+
+router.post('/productdata', function(req, res, next) {
+    var db = req.db;
+    var collection = db.get('productdata');
+    collection.insert(req.body, function(err, result){
+        res.send(
+            (err === null) ? {msg: '' } : {msg: err }
+        );
+    });
+});
+
 
 function scrapeSite(req, callback){
     var url = req.query.url;

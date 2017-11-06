@@ -1,7 +1,7 @@
 $(document).ready(function(){
 
     $('#submiturl').on('click', addPage);
-    getProductList();
+    $('#updateall').on('click',updateProducts);
 });
 
 
@@ -32,15 +32,15 @@ function getProductList(){
 
         $.getJSON( '/product/productlist/',function( data ) {
             var tableContent = '';
-            console.log(data);
+            //console.log(data);
             // Stick our user data array into a websiteList variable in the global object
             var productData = data;
 
             // For each item in our JSON add a table row and cells to the content string
             $.each(productData, function(){
                 id=this._id;
-                
-                updateEntry(id);
+
+                //updateEntry(id);
 
             });
             drawTable(tableContent);
@@ -51,14 +51,28 @@ function getProductList(){
 
 }
 
-function updateEntry(id){
-    console.log(id);
+function updateProducts(){
+    $.getJSON( '/product/productlist/',function( data ) {
+        var tableContent = '';
+        //console.log(data);
+        // Stick our user data array into a websiteList variable in the global object
+        var productData = data;
+
+        // For each item in our JSON add a table row and cells to the content string
+        $.each(productData, function(){
+            //console.log(id);
+            var url = this.url;
+            var id = this._id;
+            crawlpage(url, id);
+        });
+        drawTable(tableContent);
+
+    });
 }
 
 
 
-function crawlpage(){
-var url = $('#urltosubmit').val();
+function crawlpage(url, id){
 $.ajax({
     type: 'GET',
     url: ('/product'),
@@ -66,17 +80,34 @@ $.ajax({
         'url': url
         },
     }).done(function(response){
-        //var object = JSON.parse(response);
-        var realpreis = ""
-
-        if (response.preis == ""){
-            realpreis = response.salepreis+ ' anstatt <strike>' + response.strokepreis+ '</strike>';
-        } else {
-            realpreis = response.preis;
+        //console.log(response.name);
+        //console.log(id);
+        var productName = response.name;
+        if (response.preis==""){
+            var realpreis=response.salepreis;
+        }else{
+            var realpreis=response.preis;
         }
-        var tableContent = '<tr><td>'+response.asin+'</td><td>'+response.name+'</td><td>'+realpreis+'</td><td>'+response.availability+'</td><td><img width="100px" src="'+response.image+'"</td></tr>';
-        drawTable(tableContent);
-
+        var productObject = {
+            'productid': id,
+            'name': response.name,
+            'url': url,
+            'asin': response.asin,
+            'preis': response.preis,
+            'salepreis': response.salepreis,
+            'strokepreis': response.strokepreis,
+            'realpreis':realpreis,
+            'image': response.image,
+            'availability': response.availability,
+        };
+        $.ajax({
+            type: 'POST',
+            url: ('/product/productdata'),
+            data: productObject,
+            }).done(function(response){
+                //var object = JSON.parse(response);
+                console.log('Posted Update for: ' + productName);
+            });
     });
 }
 /*
