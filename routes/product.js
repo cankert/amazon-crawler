@@ -36,41 +36,24 @@ router.get('/', function(req, res, next) {
     }
 });
 
-/*
-router.post('/', function(req, res, next) {
-  res.send('respond with a resource');
-});
-
-res.render('index', { title: productName });
-
-router.update('/', function(req, res, next) {
-  res.send('respond with a resource');
-});
-
-router.delete('/', function(req, res, next) {
-  res.send('respond with a resource');
-});*/
-
-
-/*function getAsin(req,callback){
-    var url = req.query.url;
-    //var url = 'http://www.amazon.de/gp/product/B00GU556SA/';
-    //console.log('Trying this ' + url);
-    request(url, function (error, response, html) {
-        //console.log(request.statusCode);
-        if (!error && response.statusCode == 200) {
-            var $ = cheerio.load(html);
-            //var productAsin = $('#priceblock_ourprice').text();
-            var productAsin = $('#ASIN').val();
-            console.log('Found this ASIN: ' + productAsin);
-            callback(productAsin, url);
-          }
-          else {
-              console.log('ASIN Scrape Failed - Wrong URL or ID?');
-          }
-
+router.get('/productlist', function(req, res, next) {
+    var db = req.db;
+    var collection = db.get('productlist');
+    collection.find({},{},function(e,docs){
+        res.json(docs);
     });
-}*/
+});
+
+
+router.post('/', function(req, res, next) {
+    var db = req.db;
+    var collection = db.get('productlist');
+    collection.insert(req.body, function(err, result){
+        res.send(
+            (err === null) ? {msg: '' } : {msg: err }
+        );
+    });
+});
 
 function scrapeSite(req, callback){
     var url = req.query.url;
@@ -94,6 +77,8 @@ function scrapeSite(req, callback){
     });
 
 }
+
+
 
 
 
