@@ -6,14 +6,13 @@ block content
             div.container
                 a(href="/") Back
                 h2=title
-                div!=chart
+                div.col-md-12!=chart
                 table#myTable.table
                     thead
                         th Datum
                         th Uhrzeit
                         th Preis
                         th Verfügbarkeit
-                        th Bild
                     tbody
                         each data in productdata
                             tr
@@ -21,6 +20,5 @@ block content
                                 td=data.time
                                 td=data.realpreis
                                 td=data.availability
-                                td=data.image
                 <br>
                 a(href="/") Back
