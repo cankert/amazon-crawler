@@ -2,56 +2,43 @@ $(document).ready(function(){
 
     $('#submiturl').on('click', addPage);
     $('#updateall').on('click',updateProducts);
+    refreshTable();
 });
 
 
 
 function addPage(){
     var url = $('#urltosubmit').val();
+    getProductName(url, postProduct)
+    setTimeout(function(){
+        refreshTable();
+    }, 2000);
+}
+
+function postProduct(data){
     $.ajax({
         type: 'POST',
+        url: ('/product'),
+        data: data,
+        }).done(function(response){
+            //var object = JSON.parse(response);
+            console.log('Product added');;
+        });
+}
+
+function getProductName(url, callback){
+    $.ajax({
+        type: 'GET',
         url: ('/product'),
         data: {
             'url': url
             },
         }).done(function(response){
-            //var object = JSON.parse(response);
-            alert('Product posted');
+            callback(response);
         });
 }
 
-function getProductList(){
-    /*$.ajax({
-        type: 'GET',
-        url: ('/product/productlist/'),
-        data: "",
-        }).done(function(response){
-            console.log(response);
-            alert('Getting Product List');
-        });*/
-
-        $.getJSON( '/product/productlist/',function( data ) {
-            var tableContent = '';
-            //console.log(data);
-            // Stick our user data array into a websiteList variable in the global object
-            var productData = data;
-
-            // For each item in our JSON add a table row and cells to the content string
-            $.each(productData, function(){
-                id=this._id;
-
-                //updateEntry(id);
-
-            });
-            drawTable(tableContent);
-
-        });
-
-
-
-}
-
-function updateProducts(){
+function refreshTable(){
     $.getJSON( '/product/productlist/',function( data ) {
         var tableContent = '';
         //console.log(data);
@@ -60,65 +47,108 @@ function updateProducts(){
 
         // For each item in our JSON add a table row and cells to the content string
         $.each(productData, function(){
-            //console.log(id);
-            var url = this.url;
-            var id = this._id;
-            crawlpage(url, id);
+
+            tableContent += '<tr>';
+            tableContent += '<td>'+this.asin + '</td>';
+            tableContent += '<td width="300px">'+this.name + '</td>';
+            tableContent += '<td><img src="'+this.image+'" width="150px"></img></td>';
+            tableContent += '<td style="max-width:200px; overflow:hidden;">'+this.realpreis+'</td>';
+            tableContent += '</tr>';
+
         });
+
         drawTable(tableContent);
 
     });
 }
 
+function updateProducts(){
+    $.getJSON( '/product/productlist/',function( data ) {
 
+        //console.log(data);
+        // Stick our user data array into a websiteList variable in the global object
+        var productData = data;
 
-function crawlpage(url, id){
-$.ajax({
-    type: 'GET',
-    url: ('/product'),
-    data: {
-        'url': url
-        },
-    }).done(function(response){
-        //console.log(response.name);
-        //console.log(id);
-        var productName = response.name;
-        if (response.preis==""){
-            var realpreis=response.salepreis;
-        }else{
-            var realpreis=response.preis;
-        }
-        var productObject = {
-            'productid': id,
-            'name': response.name,
-            'url': url,
-            'asin': response.asin,
-            'preis': response.preis,
-            'salepreis': response.salepreis,
-            'strokepreis': response.strokepreis,
-            'realpreis':realpreis,
-            'image': response.image,
-            'availability': response.availability,
-        };
-        $.ajax({
-            type: 'POST',
-            url: ('/product/productdata'),
-            data: productObject,
-            }).done(function(response){
-                //var object = JSON.parse(response);
-                console.log('Posted Update for: ' + productName);
-            });
+        // For each item in our JSON add a table row and cells to the content string
+        $.each(productData, function(){
+            //console.log(id);
+            var url = this.url;
+            console.log(url);
+            var id = this._id;
+            crawlpage(url, id, postProductData);
+        });
+
+        setTimeout(function(){
+            refreshTable();
+        }, 2000);
+
     });
 }
-/*
-tableContent += '<tr>';
-tableContent += '<td>'+this.productAsin + '</td>';
-tableContent += '<td>'+this.productName + '</td>';
-tableContent += '<td>'+this.productPreis + '</td>';
-tableContent += '<td>'+this.productAvailability + '</td>';
-tableContent += '<td>'+this.productImage + '</td>';
-tableContent += '</tr>';
-*/
+
+
+
+function crawlpage(url, id, callback){
+
+    $.ajax({
+        type: 'GET',
+        url: ('/product'),
+        data: {
+            'url': url
+            },
+        }).done(function(response){
+            //console.log(response.name);
+            //console.log(id);
+            var productName = response.name;
+            if (response.preis==""){
+                var realpreis=response.salepreis;
+            }else{
+                var realpreis=response.preis;
+            }
+            var productObject = {
+                'productid': id,
+                'name': response.name,
+                'url': url,
+                'asin': response.asin,
+                'preis': response.preis,
+                'salepreis': response.salepreis,
+                'strokepreis': response.strokepreis,
+                'realpreis':realpreis,
+                'image': response.image,
+                'availability': response.availability,
+            };
+            //console.log(realpreis);
+            updatePreis(id, realpreis);
+            callback(productObject);
+
+        });
+}
+
+function updatePreis(id, realpreis){
+    $.ajax({
+        type: 'PUT',
+        url: ('/product/'),
+        data: {
+            'id': id,
+            'realpreis': realpreis,
+        },
+        }).done(function(response){
+            //var object = JSON.parse(response);
+            console.log('Updated Preis');
+        });
+}
+
+
+function postProductData(productObject){
+    $.ajax({
+        type: 'POST',
+        url: ('/product/productdata'),
+        data: productObject,
+        }).done(function(response){
+            //var object = JSON.parse(response);
+            console.log('Posted Update');
+        });
+}
+
 function drawTable(tableContent){
 
     $('#producttable tbody').html(tableContent);

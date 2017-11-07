@@ -35,6 +35,7 @@ router.get('/', function(req, res, next) {
             'preis': productPreis,
             'salepreis': productSalepreis,
             'strokepreis': productStrokepreis,
+            'realpreis':"",
             'image': productImage,
             'availability': productAvailability,
             };
@@ -75,6 +76,20 @@ router.post('/', function(req, res, next) {
     });
 });
 
+router.put('/', function(req, res, next) {
+    var db = req.db;
+    var collection = db.get('productlist');
+    var documentId = monk.id(req.body.id);
+    console.log('THIS IS REALPREIS' + realpreis);
+    var realpreis = req.body.realpreis;
+    collection.update({ _id: documentId},{$set:{realpreis: realpreis}}, function(err, result){
+        res.send(
+            (err === null) ? {msg: '' } : {msg: err }
+        );
+    });
+
+});
+
 router.post('/productdata', function(req, res, next) {
     var db = req.db;
     var collection = db.get('productdata');
@@ -99,7 +114,7 @@ function scrapeSite(req, callback){
             var productAsin = $('#ASIN').val();
             var productAvailability = $('#availability span').text().trim().replace(/\s\s+/g, ',');
             console.log('Found Product and calling callback');
-            callback(productName,productPreis, productSalepreis,productImage,productAvailability, productStrokepreis, productAsin);
+            callback(productName,productPreis, productSalepreis,productImage,productAvailability, productStrokepreis, productAsin, url);
           }
           else {
               console.log('Scrape Failed - Wrong URL or ID?');
