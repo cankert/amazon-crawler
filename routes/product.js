@@ -107,9 +107,9 @@ function scrapeSite(req, callback){
         if (!error && response.statusCode == 200) {
             var $ = cheerio.load(html);
             var productName = $('#productTitle').text().trim().replace(/\s\s+/g, ',');
-            var productPreis = $('#priceblock_ourprice').text();
-            var productStrokepreis = $('span.a-text-strike').text();
-            var productSalepreis = $('#priceblock_saleprice').text();
+            var productPreis = $('#priceblock_ourprice').text().replace('EUR ','');
+            var productStrokepreis = $('span.a-text-strike').text().replace('EUR ','');
+            var productSalepreis = $('#priceblock_saleprice').text().replace('EUR ','');
             var productImage = $('#landingImage').data('oldHires');
             var productAsin = $('#ASIN').val();
             var productAvailability = $('#availability span').text().trim().replace(/\s\s+/g, ',');

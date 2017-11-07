@@ -3,6 +3,9 @@ $(document).ready(function(){
     $('#submiturl').on('click', addPage);
     $('#updateall').on('click',updateProducts);
     refreshTable();
+    setInterval(function(){
+        refreshTable();
+    }, 5000);
 });
 
 
@@ -12,6 +15,7 @@ function addPage(){
     getProductName(url, postProduct)
     setTimeout(function(){
         refreshTable();
+        updateProducts();
     }, 4000);
 }
 
@@ -52,7 +56,7 @@ function refreshTable(){
             tableContent += '<td>'+this.asin + '</td>';
             tableContent += '<td width="300px">'+this.name + '</td>';
             tableContent += '<td><img src="'+this.image+'" width="150px"></img></td>';
-            tableContent += '<td style="max-width:200px; overflow:hidden;">'+this.realpreis+'</td>';
+            tableContent += '<td style="max-width:200px; overflow:hidden;">'+this.realpreis+' €</td>';
             tableContent += '</tr>';
 
         });
