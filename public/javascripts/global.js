@@ -12,7 +12,7 @@ function addPage(){
     getProductName(url, postProduct)
     setTimeout(function(){
         refreshTable();
-    }, 2000);
+    }, 4000);
 }
 
 function postProduct(data){
@@ -80,7 +80,7 @@ function updateProducts(){
 
         setTimeout(function(){
             refreshTable();
-        }, 2000);
+        }, 4000);
 
     });
 }
