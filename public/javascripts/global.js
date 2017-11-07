@@ -6,9 +6,19 @@ $(document).ready(function(){
     setInterval(function(){
         refreshTable();
     }, 5000);
+    //getChart();
 });
 
+function getChart(){
+    $.ajax({
+        type: 'GET',
+        url: ('/product/chart'),
+        data: "",
+        }).done(function(response){
+            $('#chart').html(response);
+        });
 
+}
 
 function addPage(){
     var url = $('#urltosubmit').val();
@@ -54,7 +64,7 @@ function refreshTable(){
 
             tableContent += '<tr>';
             tableContent += '<td>'+this.asin + '</td>';
-            tableContent += '<td width="300px">'+this.name + '</td>';
+            tableContent += '<td width="300px"><a href="/product/detail/'+this._id+'">'+this.name + '</a></td>';
             tableContent += '<td><img src="'+this.image+'" width="150px"></img></td>';
             tableContent += '<td style="max-width:200px; overflow:hidden;">'+this.realpreis+' €</td>';
             tableContent += '</tr>';
@@ -108,8 +118,20 @@ function crawlpage(url, id, callback){
             }else{
                 var realpreis=response.preis;
             }
+            var currentDate = new Date ();
+            var dd = currentDate.getDate();
+            var mm = currentDate.getMonth()+1;
+            var yyyy = currentDate.getFullYear();
+            var today = dd + '.' + mm + '.' + yyyy;
+
+            var hh = currentDate.getHours();
+            var min = currentDate.getMinutes();
+            var time = hh + ':' + min;
+
             var productObject = {
                 'productid': id,
+                'date':today,
+                'time': time,
                 'name': response.name,
                 'url': url,
                 'asin': response.asin,

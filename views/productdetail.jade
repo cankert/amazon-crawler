@@ -4,19 +4,23 @@ block content
     -var productlist = productdata
         #productlist
             div.container
+                a(href="/") Back
                 h2=title
+                div!=chart
                 table#myTable.table
                     thead
-                        th ASIN
+                        th Datum
+                        th Uhrzeit
                         th Preis
                         th Verfügbarkeit
                         th Bild
                     tbody
                         each data in productdata
                             tr
-                                td=data.asin
+                                td=data.date
+                                td=data.time
                                 td=data.realpreis
                                 td=data.availability
                                 td=data.image
-                                
-    
+                <br>
+                a(href="/") Back

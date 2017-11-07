@@ -3,6 +3,8 @@ var router = express.Router();
 var request = require('request');
 var cheerio = require('cheerio');
 const monk = require('monk');
+const co = require('co');
+const generate = require('node-chartist');
 
 /* GET users listing. */
 /*router.get('/:id', function(req, res, next) {
@@ -52,6 +54,16 @@ router.get('/productlist', function(req, res, next) {
     });
 });
 
+router.get('/chart', function(req, res, next) {
+    //var db = req.db;
+    //var collection = db.get('productlist');
+    generateChart(sendChart);
+    function sendChart(data){
+        res.send(data);
+    }
+
+});
+
 router.get('/detail/:id', function(req, res, next) {
     var db = req.db;
     var collection = db.get('productdata');
@@ -60,7 +72,14 @@ router.get('/detail/:id', function(req, res, next) {
 
     collection.find({'productid': documentId},{},function(e,docs){
 
-        res.render('productdetail', { title: 'Productdetail' , productdata: docs, foo:'FFF'});
+        generateChart(docs, sendPage);
+
+        function sendPage(docs, chart){
+            
+            res.render('productdetail', { title: 'Productdetail' , productdata: docs, chart:chart});
+        }
+
+
     });
 
 });
@@ -124,7 +143,27 @@ function scrapeSite(req, callback){
 
 }
 
+// HTML Chart Generation
 
+function generateChart(docs, callback){
+
+    co(function * () {
+
+      // options object
+      const options = {width: 400, height: 200};
+      const data = {
+        labels: ['a','b','c','d','e'],
+        series: [
+          [1, 2, 3, 4, 5],
+          [3, 4, 5, 6, 7]
+        ]
+      };
+      const bar = yield generate('line', options, data);
+      //console.log(bar);
+      callback(docs, bar);
+    });
+
+}
 
 
 
