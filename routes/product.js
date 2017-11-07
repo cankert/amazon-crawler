@@ -75,7 +75,7 @@ router.get('/detail/:id', function(req, res, next) {
         generateChart(docs, sendPage);
 
         function sendPage(docs, chart){
-            
+
             res.render('productdetail', { title: 'Productdetail' , productdata: docs, chart:chart});
         }
 
@@ -147,18 +147,32 @@ function scrapeSite(req, callback){
 
 function generateChart(docs, callback){
 
+    // aus docs tabellen Daten machen
+    //console.log(docs);
+    var labelData = [];
+    var seriesData = [];
+    var docsSorted = docs.sort(function(a, b) {
+    return parseFloat(b.utc) - parseFloat(a.utc);
+    });
+    var docsSliced = docsSorted.slice(Math.max(docsSorted.length - 10, 0));
+
+    docsSliced.forEach(function(item){
+        var preis = parseFloat(item.realpreis);
+        var datum = item.date;
+        seriesData.push(preis);
+        labelData.push(datum);
+    });
+    //console.log(docsSliced);
+
     co(function * () {
 
       // options object
-      const options = {width: 400, height: 200};
+      const options = {width: 1000, height: 200, fullWidth: false};
       const data = {
-        labels: ['a','b','c','d','e'],
-        series: [
-          [1, 2, 3, 4, 5],
-          [3, 4, 5, 6, 7]
-        ]
+        labels: labelData,
+        series: [seriesData]
       };
-      const bar = yield generate('line', options, data);
+      const bar = yield generate('line',options, data);
       //console.log(bar);
       callback(docs, bar);
     });

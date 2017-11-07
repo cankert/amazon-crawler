@@ -123,13 +123,14 @@ function crawlpage(url, id, callback){
             var mm = currentDate.getMonth()+1;
             var yyyy = currentDate.getFullYear();
             var today = dd + '.' + mm + '.' + yyyy;
-
+            var utc = currentDate.getTime();
             var hh = currentDate.getHours();
             var min = currentDate.getMinutes();
             var time = hh + ':' + min;
 
             var productObject = {
                 'productid': id,
+                'utc':utc,
                 'date':today,
                 'time': time,
                 'name': response.name,
