@@ -66,10 +66,11 @@ router.get('/chart', function(req, res, next) {
 
 });
 
-router.get('/detail/:id', function(req, res, next) {
+router.get('/detail/:id/:title?', function(req, res, next) {
     var db = req.db;
     var collection = db.get('productdata');
     var documentId = req.params.id;
+    var title = req.params.title;
     console.log(documentId);
 
     collection.find({'productid': documentId},{},function(e,docs){
@@ -78,7 +79,7 @@ router.get('/detail/:id', function(req, res, next) {
 
         function sendPage(docs, chart){
 
-            res.render('productdetail', { title: 'Productdetail' , productdata: docs.reverse(), chart:chart});
+            res.render('productdetail', { title: title , productdata: docs.reverse(), chart:chart});
         }
 
 

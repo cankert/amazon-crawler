@@ -124,7 +124,7 @@ function refreshTable(){
 
             tableContent += '<tr>';
             tableContent += '<td>'+this.asin + '</td>';
-            tableContent += '<td width="300px"><a href="/product/detail/'+this._id+'">'+this.name + '</a></td>';
+            tableContent += '<td width="300px"><a href="/product/detail/'+this._id+'/'+this.name+'">'+this.name + '</a></td>';
             tableContent += '<td><img src="'+this.image+'" width="150px"></img></td>';
             tableContent += '<td style="max-width:200px; overflow:hidden;">'+this.realpreis+' €</td>';
             tableContent += '<td ><input type="text" id="watchprice'+this._id+'" placeholder="'+this.watchprice+'"></input></td>';
@@ -156,10 +156,11 @@ function updateProducts(){
             crawlpage(url, id, watchprice, postProductData);
         });
 
-        refreshTable();
+
 
 
     });
+    refreshTable();
 }
 
 
