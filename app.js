@@ -8,10 +8,12 @@ var request = require('request');
 var cheerio = require('cheerio');
 var index = require('./routes/index');
 var product = require('./routes/product');
+var mail = require('./routes/mail');
 var mongo = require('mongodb');
 var monk = require('monk');
 var db = monk('localhost:27017/amazon');
 var app = express();
+
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -32,6 +34,7 @@ app.use(function(req,res,next){
 
 app.use('/', index);
 app.use('/product', product);
+app.use('/mail', mail);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
