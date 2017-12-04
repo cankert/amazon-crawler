@@ -6,12 +6,9 @@ $(document).ready(function(){
     refreshTable();
 
     setInterval(function(){
-        updateProducts(function(){
-            console.log("Running global Update on: ".time.now());
-            refreshTable();
-        });
 
-    }, 300000);
+            refreshTable();
+    }, 10000);
     //getChart();
 });
 
@@ -140,7 +137,7 @@ function refreshTable(){
 }
 
 function updateProducts(){
-    $.getJSON( '/product/productlist/',function( data ) {
+    /*$.getJSON( '/product/productlist/',function( data ) {
 
         //console.log(data);
         // Stick our user data array into a websiteList variable in the global object
@@ -159,7 +156,15 @@ function updateProducts(){
 
 
 
-    });
+    });*/
+
+    $.ajax({
+        type: 'GET',
+        url: ('/product/update'),
+        data: {},
+        }).done(function(response){
+            console.log('Updated Products');
+        });
     refreshTable();
 }
 

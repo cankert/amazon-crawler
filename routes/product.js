@@ -5,6 +5,8 @@ var cheerio = require('cheerio');
 const monk = require('monk');
 const co = require('co');
 const generate = require('node-chartist');
+const nodemailer = require('nodemailer');
+
 
 /* GET users listing. */
 /*router.get('/:id', function(req, res, next) {
@@ -26,10 +28,12 @@ collection.find({'websiteid': monk.id(documentId)}, {sort: {date:-1}}).then((web
 */
 
 router.get('/', function(req, res, next) {
+    var url = req.query.url;
+    var id = req.query.id;
+    var watchprice = req.query.watchprice;
+    scrapeSite(req, url,id,watchprice, respondJSON);
 
-    scrapeSite(req,respondJSON);
-
-    function respondJSON(productName,productPreis, productSalepreis,productImage,productAvailability, productStrokepreis, productAsin, url){
+    function respondJSON(req, id, productName,productPreis, productSalepreis,productImage,productAvailability, productStrokepreis, productAsin, url){
         var productJSON = {
             'url': url,
             'name': productName,
@@ -66,10 +70,36 @@ router.get('/chart', function(req, res, next) {
 
 });
 
+router.get('/update', function(req, res, next) {
+    var db = req.db;
+    var collection = db.get('productlist');
+
+    collection.find({},{},function(e,docs){
+        docs.forEach(function(item){
+            var url = item.url;
+            var id = item._id;
+            var watchprice = item.watchprice;
+            //console.log('THIS IS UPDATE ID '+id);
+            //console.log('THIS IS NOMONK ID '+nomonk);
+            scrapeSite(req, url, id, watchprice, postProductData);
+            //scrapeSite(url);
+        });
+    })
+
+    //console.log(data);
+
+    function logg(productObject){
+        console.log('Update Check!!!');
+        postProductData2(productObject);
+    }
+
+    res.send('');
+});
+
 router.get('/detail/:id/:title?', function(req, res, next) {
     var db = req.db;
     var collection = db.get('productdata');
-    var documentId = req.params.id;
+    var documentId = monk.id(req.params.id);
     var title = req.params.title;
     console.log(documentId);
 
@@ -86,6 +116,8 @@ router.get('/detail/:id/:title?', function(req, res, next) {
     });
 
 });
+
+
 
 
 router.post('/', function(req, res, next) {
@@ -147,9 +179,65 @@ router.post('/productdata', function(req, res, next) {
 
 ////////////////////////FUNCTIONS////////////////////////////////////////////////////////
 
+function updateRealpreis(req, id, realpreis){
+    var db = req.db;
+    var collection = db.get('productlist');
+    var documentId = monk.id(id);
+    collection.update({ _id: documentId},{$set:{realpreis: realpreis}}, function(err, result){
+        console.log('Realpreis Updated');
+    });
+}
 
-function scrapeSite(req, callback){
-    var url = req.query.url;
+
+
+function postProductData(req, id, productName,productPreis, productSalepreis,productImage,productAvailability, productStrokepreis, productAsin, url){
+    var db = req.db;
+    var collection2 = db.get('productdata');
+
+    if (productPreis==""){
+        var realpreis=productSalepreis;
+    }else{
+        var realpreis=productPreis;
+    }
+    var currentDate = new Date ();
+    var dd = currentDate.getDate();
+    var mm = currentDate.getMonth()+1;
+    var yyyy = currentDate.getFullYear();
+    var today = dd + '.' + mm + '.' + yyyy;
+    var utc = currentDate.getTime();
+    var hh = currentDate.getHours();
+    var min = currentDate.getMinutes();
+    var time = hh + ':' + min;
+    var linuxtime = Date.now();
+
+    var productObject = {
+        'productid': monk.id(id),
+        'utc':utc,
+        'date':currentDate,
+        'time': time,
+        'name': productName,
+        'url': url,
+        'asin': productAsin,
+        'preis': productPreis,
+        'salepreis': productSalepreis,
+        'strokepreis': productStrokepreis,
+        'realpreis':realpreis,
+        'image': productImage,
+        'availability': productAvailability,
+    };
+
+    collection2.insert(productObject, function(err, result){
+        console.log('UpdateSuccess');
+        //console.log(result);
+    });
+
+    updateRealpreis(req, id,realpreis);
+}
+
+
+
+
+function scrapeSite(req,url,id, watchprice,callback){
     request(url, function (error, response, html) {
         if (!error && response.statusCode == 200) {
             var $ = cheerio.load(html);
@@ -160,8 +248,22 @@ function scrapeSite(req, callback){
             var productImage = $('#landingImage').data('oldHires');
             var productAsin = $('#ASIN').val();
             var productAvailability = $('#availability span').text().trim().replace(/\s\s+/g, ',');
-            //console.log('Found Product and calling callback');
-            callback(productName,productPreis, productSalepreis,productImage,productAvailability, productStrokepreis, productAsin, url);
+            //console.log('Found Product and calling callback' + id);
+            callback(req, id, productName,productPreis, productSalepreis,productImage,productAvailability, productStrokepreis, productAsin, url);
+
+            if (productPreis==""){
+                var realpreis=productSalepreis;
+            }else{
+                var realpreis=productPreis;
+            }
+
+            if(realpreis<watchprice){
+                nachricht = (
+                "Hier der Link: " + url
+                );
+                sendMail(productName + ' ist im Angebot für '+realpreis, nachricht)
+            }
+
           }
           else {
               console.log('Scrape Failed - Wrong URL or ID?');
@@ -230,7 +332,38 @@ function generateChart(docs, callback){
     });
 
 }
+function sendMail(betreff,nachricht){
 
+
+        // create reusable transporter object using the default SMTP transport
+        let transporter = nodemailer.createTransport({
+            host: 'w010a028.kasserver.com',
+            port: 25,
+            secure: false, // true for 465, false for other ports
+            auth: {
+                user: 'm02a5104', // generated ethereal user
+                pass: 'freemail'  // generated ethereal password
+            }
+        });
+
+        // setup email data with unicode symbols
+        let mailOptions = {
+            from: '"Christian Ankert" <mail@ankertc.de>', // sender address
+            to: 'ankert.c@gmail.com', // list of receivers
+            subject: betreff, // Subject line
+            text: nachricht, // plain text body
+            html: nachricht // html body
+        };
+
+        // send mail with defined transport object
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                return console.log(error);
+            }
+            console.log('Message sent: %s', info.messageId);
+
+        });
+}
 
 
 
