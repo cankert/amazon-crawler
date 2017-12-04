@@ -16,8 +16,10 @@
     "monk": "^4.0.0",
     "morgan": "~1.9.0",
     "node-chartist": "^1.0.5",
+    "node-cron": "^1.2.1",
     "nodemailer": "^4.4.0",
     "request": "^2.83.0",
+    "restler": "^3.4.0",
     "serve-favicon": "~2.4.5"
   }
 }

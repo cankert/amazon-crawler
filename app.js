@@ -13,7 +13,8 @@ var mongo = require('mongodb');
 var monk = require('monk');
 var db = monk('localhost:27017/amazon');
 var app = express();
-
+var cron = require('node-cron');
+var restler = require('restler');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -53,6 +54,14 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
-
+var task = cron.schedule('*/5 * * * *', function(){
+    console.log('running a task every 5 minutes');
+    var getResp = function(url){
+        restler.get(url).on('complete', function(response){
+            console.log('Called API');
+        });
+    };
+    getResp('http://localhost:3000/product/update');
+}, true);
 
 module.exports = app;
