@@ -15,6 +15,7 @@ var db = monk('localhost:27017/amazon');
 var app = express();
 var cron = require('node-cron');
 var restler = require('restler');
+const notifier = require('node-notifier');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -54,11 +55,19 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+var currentDate = new Date ();
 var task = cron.schedule('*/5 * * * *', function(){
-    console.log('running a task every 5 minutes');
+    console.log(currentDate+' : Scheduler Task every 5 minutes.');
     var getResp = function(url){
         restler.get(url).on('complete', function(response){
-            console.log('Called API');
+            //console.log('Called API');
+            notifier.notify({
+                'title': 'Amazon Crawler',
+                'message': 'Running Update',
+                'wait':true,
+                'sound':'Purr'
+            });
+
         });
     };
     getResp('http://localhost:3000/product/update');

@@ -6,6 +6,7 @@ const monk = require('monk');
 const co = require('co');
 const generate = require('node-chartist');
 const nodemailer = require('nodemailer');
+const notifier = require('node-notifier');
 
 
 /* GET users listing. */
@@ -262,6 +263,10 @@ function scrapeSite(req,url,id, watchprice,callback){
                 "Hier der Link: " + url
                 );
                 sendMail(productName + ' ist im Angebot für '+realpreis, nachricht)
+                notifier.notify({
+                    'title': 'Amazon Crawler',
+                    'message': productName + ' ist im Angebot für '+realpreis
+                });
             }
 
           }
