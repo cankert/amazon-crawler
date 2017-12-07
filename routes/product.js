@@ -258,15 +258,22 @@ function scrapeSite(req,url,id, watchprice,callback){
                 var realpreis=productPreis;
             }
 
-            if(realpreis<watchprice){
+            if(parseFloat(realpreis)<parseFloat(watchprice)){
                 nachricht = (
                 "Hier der Link: " + url
                 );
                 sendMail(productName + ' ist im Angebot für '+realpreis, nachricht)
                 notifier.notify({
                     'title': 'Amazon Crawler',
-                    'message': productName + ' ist im Angebot für '+realpreis
+                    'message': productName + ' ist im Angebot für '+realpreis+' Watchprice war: '+watchprice
                 });
+
+                notifier.notify({
+                    'title': 'Amazon Crawler',
+                    'message': 'Found Product '+productName + ' for: '+realpreis
+                });
+
+                console.log('Found Product '+productName + ' for: '+realpreis);
             }
 
           }

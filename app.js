@@ -65,7 +65,7 @@ var task = cron.schedule('*/5 * * * *', function(){
                 'title': 'Amazon Crawler',
                 'message': 'Running Update',
                 'wait':true,
-                'sound':'Purr'
+                'sound':'Pop'
             });
 
         });
